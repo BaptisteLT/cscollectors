@@ -24,49 +24,14 @@ class HomeController extends Controller
         //TODO: boucler sur toutes les caisses du marché
         //TODO: mettre en BDD avec une table Container qui est reliée à 1 ou plusieurs Item
 
-        //Récupère le contenu de la caisse dont on a passé l'url en paramètre correspondant à l'URL sur le steam market
-        $skins = $this->csContainersService->retrieveContainerItems('https://steamcommunity.com/market/listings/730/Fracture%20Case');
+
+
+        //Récupère le contenu de la caisse dont on a passé l'url en paramètre correspondant à l'URL sur le steam market                 //TODO: Il va falloir utiliser le hash_name qui est en anglais et rajouter les %20
+        $skins = $this->csContainersService->retrieveContainerItems('https://steamcommunity.com/market/listings/730/ESL%20One%20Cologne%202014%20Mirage%20Souvenir%20Package');
 
         dump($skins);die;
 
 
         return view('welcome');
-
-
-        /*
-        crawl les infos de la caisse
-
-        require_once 'vendor/autoload.php'; // Assuming you have the necessary autoload file
-
-        use Symfony\Component\DomCrawler\Crawler;
-
-        // Your HTML content (replace this with your actual HTML content)
-        $htmlContent = '
-            ... (your HTML content here) ...
-        ';
-
-        // Use Symfony DomCrawler to parse HTML
-        $crawler = new Crawler($htmlContent);
-
-        // Find the script tag containing the g_rgAssets data
-        $scriptTag = $crawler->filter('script:contains("var g_rgAssets =")')->first();
-
-        // Extract the JavaScript code containing g_rgAssets
-        $javascriptCode = $scriptTag->text();
-
-        // Extract the g_rgAssets object as JSON
-        preg_match('/var g_rgAssets = ({.*?});/', $javascriptCode, $matches);
-        $g_rgAssetsJson = $matches[1] ?? null;
-
-        // Decode the JSON in PHP
-        $g_rgAssets = json_decode($g_rgAssetsJson, true);
-
-        // Access the specific data you're interested in
-        $itemData = $g_rgAssets['730']['2'] ?? null;
-
-        // Print the retrieved item data
-        print_r($itemData);
-        */
-        
     }
 }

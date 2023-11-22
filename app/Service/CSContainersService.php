@@ -21,10 +21,15 @@ class CSContainersService
             $response = Http::get($url);
 
             //Retourne un message d'erreur si on a dépassé le nombre de requêtes limites de l'API
-            if($response->status() !== 200)
+            if($response->status() === 429)
             {
-                return ['data' => null, 'error' => 'Error '.$response->status(). ': '.$response->body()];
+                return ['data' => null, 'containerName' => null, 'error' => 'Error 429: Too Many Requests'];
             }
+            else if($response->status() !== 200)
+            {
+                return ['data' => null, 'containerName' => null, 'error' => 'Error while fetching steam market'];
+            }
+            
 
             // Access the response body as a string
             $htmlContent = $response->body();
@@ -48,46 +53,59 @@ class CSContainersService
                 //On supprime "var g_rgAppContextData =" qui est devant
                 $modifiedString = str_replace('var g_rgAppContextData = ', '', $modifiedString);
             } else {
-                return ['data' => null, 'error' => 'Error while parsing the container\'s information'];
+                return ['data' => null, 'containerName' => null, 'error' => 'Error while parsing the container\'s information'];
             }
 
             //Supprime tout ce qui est derrière 'var g_rgAssets = '
             $textToFind = 'var g_rgAssets = ';
             $position = strpos($modifiedString, $textToFind);
+
             if ($position !== false) {
                 // Supprimer 'var g_rgAssets = ' et tout ce qui se trouve avant pour ne garder que le json
                 $modifiedString = substr($modifiedString, $position + strlen($textToFind));
+                 //On supprime aussi ce truc là que j'ai retrouvé dans un conteneur souvenir
+                $modifiedString = str_replace('; var g_rgCurrency = []','',$modifiedString);
+        
             } else {
-                return ['data' => null, 'error' => 'Error while parsing the container\'s information'];
+                return ['data' => null, 'containerName' => null, 'error' => 'Error while parsing the container\'s information'];
             }
 
             // Decode the JSON in PHP
             $array = json_decode($modifiedString, true);
 
+            
             if($array === null)
             {
-                return ['data' => null, 'error' => 'JSON is invalid and cannot be decoded'];
+                return ['data' => null, 'containerName' => null, 'error' => 'JSON is invalid and cannot be decoded'];
             }
 
             //Les informations de la caisse, on utilise reset car il y a une clé aléatoire que je ne peux pas déterminer à l'avance
             $caseData = reset($array[730][2]);
+
+            $containerName = $caseData['name'];
+
             //Récupère les descriptions qui correspondent en partie aux items contenus dans la caisse
             $descriptions = $caseData['descriptions'];
 
             //On va boucler sur chaque description pour supprimer ceux qui ne sont pas des skins
             foreach($descriptions as $key => $item)
             {
-                if(!str_contains($item['value'], '|'))
+                if(!(str_contains($item['value'], '|') || str_contains($item['value'], '(') || isset($item['color'])) 
+                || empty($item['value'])
+                || str_contains($item['value'], 'Container Series')
+                || str_contains($item['value'], 'commemorates')
+                || str_contains($item['value'], 'dropped during')
+                || str_contains($item['value'], 'Contains one'))
                 {
                     unset($descriptions[$key]);
                 }
             }
             //Retourne les items contenus dans la caisse ou container
-            return ['data' => $descriptions, 'error' => null];
+            return ['data' => $descriptions, 'containerName' => $containerName, 'error' => null];
     
         } catch (\Exception $e) {
             Log::error('An unexpected error occured: ' . $e->getMessage());
-            return ['data' => null, 'error' => 'An unexpected error occured'];
+            return ['data' => null, 'containerName' => null, 'error' => 'An unexpected error occured'];
         }
     }
 }
