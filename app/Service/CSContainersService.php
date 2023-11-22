@@ -8,6 +8,19 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class CSContainersService
 {
+    private $http;
+
+    private $crawler;
+
+    private $log;
+
+    public function __construct(Http $http, Crawler $crawler, Log $log)
+    {
+        $this->http = $http;
+        $this->crawler = $crawler;
+        $this->log = $log;
+    }
+
     /**
      * Retourne une erreur s'il y a, ou la liste des items contenus dans le container
      *
@@ -18,7 +31,7 @@ class CSContainersService
     {
         try {
             // Make a GET request using the Http facade
-            $response = Http::get($url);
+            $response = $this->http::get($url);
 
             //Retourne un message d'erreur si on a dépassé le nombre de requêtes limites de l'API
             if($response->status() === 429)
@@ -35,10 +48,10 @@ class CSContainersService
             $htmlContent = $response->body();
 
             // Use Symfony DomCrawler to parse HTML
-            $crawler = new Crawler($htmlContent);
+            $this->crawler->add($htmlContent);
 
             // Find the script tag containing the g_rgAssets data
-            $scriptTag = $crawler->filter('script:contains("var g_rgAssets =")')->first();
+            $scriptTag = $this->crawler->filter('script:contains("var g_rgAssets =")')->first();
 
             // Extract the JavaScript code containing g_rgAssets
             $javascriptCode = $scriptTag->text();
@@ -104,7 +117,7 @@ class CSContainersService
             return ['data' => $descriptions, 'containerName' => $containerName, 'error' => null];
     
         } catch (\Exception $e) {
-            Log::error('An unexpected error occured: ' . $e->getMessage());
+            $this->log::error('An unexpected error occured: ' . $e->getMessage());
             return ['data' => null, 'containerName' => null, 'error' => 'An unexpected error occured'];
         }
     }
