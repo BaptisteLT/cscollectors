@@ -10,14 +10,11 @@ class CSContainersService
 {
     private $http;
 
-    private $crawler;
-
     private $log;
 
-    public function __construct(Http $http, Crawler $crawler, Log $log)
+    public function __construct(Http $http, Log $log)
     {
         $this->http = $http;
-        $this->crawler = $crawler;
         $this->log = $log;
     }
 
@@ -31,8 +28,9 @@ class CSContainersService
     {
         try {
             // Make a GET request using the Http facade
-            $response = $this->http::get($url);
+            $response = $this->http::get(str_replace(' ', '%20',$url));
 
+            
             //Retourne un message d'erreur si on a dépassé le nombre de requêtes limites de l'API
             if($response->status() === 429)
             {
@@ -47,17 +45,18 @@ class CSContainersService
             // Access the response body as a string
             $htmlContent = $response->body();
 
+            $crawler = new Crawler;
             // Use Symfony DomCrawler to parse HTML
-            $this->crawler->add($htmlContent);
+            $crawler->add($htmlContent);
 
             // Find the script tag containing the g_rgAssets data
-            $scriptTag = $this->crawler->filter('script:contains("var g_rgAssets =")')->first();
+            $scriptTag = $crawler->filter('script:contains("var g_rgAssets =")')->first();
 
             // Extract the JavaScript code containing g_rgAssets
             $javascriptCode = $scriptTag->text();
 
             
-            $position = strpos( $javascriptCode, '; var g_rgListingInfo = {');
+            $position = strpos($javascriptCode, '; var g_rgListingInfo = {');
 
             //On supprime tout se qui se trouve après "; var g_rgListingInfo = {", soit les infos inutiles
             if ($position !== false) {
@@ -66,6 +65,9 @@ class CSContainersService
                 //On supprime "var g_rgAppContextData =" qui est devant
                 $modifiedString = str_replace('var g_rgAppContextData = ', '', $modifiedString);
             } else {
+                //dump($url);
+                //dump('1');
+                //dump($htmlContent);die;
                 return ['data' => null, 'containerName' => null, 'error' => 'Error while parsing the container\'s information'];
             }
 
@@ -80,13 +82,13 @@ class CSContainersService
                 $modifiedString = str_replace('; var g_rgCurrency = []','',$modifiedString);
         
             } else {
+                //dump($modifiedString);die;
                 return ['data' => null, 'containerName' => null, 'error' => 'Error while parsing the container\'s information'];
             }
 
-            // Decode the JSON in PHP
+            // Decode the JSON in a PHP array
             $array = json_decode($modifiedString, true);
 
-            
             if($array === null)
             {
                 return ['data' => null, 'containerName' => null, 'error' => 'JSON is invalid and cannot be decoded'];
@@ -117,8 +119,59 @@ class CSContainersService
             return ['data' => $descriptions, 'containerName' => $containerName, 'error' => null];
     
         } catch (\Exception $e) {
+            //dump($e);die;
             $this->log::error('An unexpected error occured: ' . $e->getMessage());
             return ['data' => null, 'containerName' => null, 'error' => 'An unexpected error occured'];
+        }
+    }
+
+    public function getAllContainers()
+    {
+        try {
+            $start = 0;
+            $count = 100;
+            $iterate = true;
+            $containers = [];
+            $error = null;
+
+            //Boucle sur toutes les pages
+            while($iterate === true)
+            {
+                // On fait un call au steam market  pour récup  tous  les containers
+                $response = $this->http::get("https://steamcommunity.com/market/search/render?norender=1&start=$start&count=$count&q=&category_730_ItemSet%5B%5D=any&category_730_ProPlayer%5B%5D=any&category_730_StickerCapsule%5B%5D=any&category_730_TournamentTeam%5B%5D=any&category_730_Weapon%5B%5D=any&category_730_Type%5B%5D=tag_CSGO_Type_WeaponCase&appid=730");
+
+                //Retourne un message d'erreur si on a dépassé le nombre de requêtes limites de l'API
+                if($response->status() === 429)
+                {
+                    throw new Exception('Error 429: Too Many Requests');
+                }
+                else if($response->status() !== 200)
+                {
+                    throw new Exception('Error while fetching steam market');
+                }
+
+                $data = json_decode($response, true);
+
+                //On construit l'array qui contiendra tous les containers
+                foreach($data['results'] as $container)
+                {
+                    $containers[] = $container;
+                }
+
+                $start = $start + $count;
+
+                //Permet de déterminer si on a bouclé sur toutes les pages afin de ne plus itérer.
+                if($start > $data['total_count'])
+                {
+                    $iterate = false;
+                }
+            }
+            
+            return ['data' => $containers];
+
+        } catch (\Exception $e) {
+            $this->log::error('An unexpected error occured: ' . $e->getMessage());
+            throw new Exception('An unexpected error occured' . $e->getMessage());
         }
     }
 }
