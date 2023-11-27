@@ -11,12 +11,17 @@ body {
 /*HEADER*/
 
 header{
+    box-sizing: border-box;
     color: #fff;
     background: #1C223D;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 20px;
+    padding: 15px 20px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 10;
 }
 
 
@@ -73,6 +78,7 @@ header{
 {
     margin-right: 4px;
     pointer-events: initial;
+    cursor: pointer;
 }
 /*END-HEADER-SEARCH*/
 
@@ -82,4 +88,66 @@ header{
     height: 40px;
     width: 40px;
     border-radius: 12px;
+    cursor: pointer;
 }
+#user-dropdown-arrow
+{
+    position: absolute;
+    transform: rotate(45deg);
+    height: 10px;
+    width: 10px;
+    background: #3C3F53;
+    right: 15px;
+}
+#user-dropdown{
+    z-index: 1;
+    width: 110px;
+    height: 50px;
+    background: #282F44;
+    border: 1px solid #3C3F53;
+    position: absolute;
+    float: right;
+    border-radius: 12px;
+    margin-top: 4px;
+    display: flex;
+    justify-content: center;
+}
+
+#user-dropdown-wrapper
+{
+    flex-direction: row-reverse;
+    position: relative;
+    display: none;
+}
+#user-dropdown-wrapper.active
+{
+    display: flex;
+}
+.user-menu-item
+{
+    display: flex;
+    align-content: center;
+    align-items:center;
+    justify-content:center;
+    cursor: pointer;
+    text-decoration: none;
+    color: white; /* You can set the color you want */
+}
+
+.user-menu-icon
+{
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+}
+
+#login
+{
+    font-size: 0;
+    line-height: 0;
+}
+#login>img
+{
+    width: 180px;
+}
+/*HEADER-END-IMAGE*/

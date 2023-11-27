@@ -186,8 +186,19 @@ foreach ($skins as $skin) {
         //Récupère le contenu de la caisse dont on a passé l'url en paramètre correspondant à l'URL sur le steam market                 //TODO: Il va falloir utiliser le hash_name qui est en anglais et rajouter les %20
         
         
-
-
-        return view('welcome'); 
+        //Récupère les conteneurs et tri les skins par ordre ASC de rareté
+        $containers = Container::with(['skins' => function ($query) {
+            $query->select('skins.*', 'rarities.color', 'rarities.background_color')
+                ->join('rarities', 'skins.rarity_id', '=', 'rarities.id')
+                ->orderBy('rarities.rarity', 'asc');
+            },
+        //Compte le nombre d'items que l'utilisateur a dans sa collection
+        ])/*->withCount(['skins' => function ($query) {
+            $query->join('skin_user', 'skins.id', '=', 'skin_user.skin_id')
+                ->where('skin_user.user_id', auth()->id());
+        }])*/->get();
+     
+        
+        return view('welcome', ['containers' => $containers]); 
     }
 }

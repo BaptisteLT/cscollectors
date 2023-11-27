@@ -12,9 +12,22 @@
     </div>
 
     @if(auth()->check())
-        <img id="avatar-image" src="https://avatars.akamai.steamstatic.com/{{ Auth::user()->avatar_hash }}_medium.jpg" alt="profile image" />
+        <div id="user">
+            <img id="avatar-image" src="https://avatars.akamai.steamstatic.com/{{ Auth::user()->avatar_hash }}_medium.jpg" alt="profile image" />
+            <div id="user-dropdown-wrapper">
+                <div id="user-dropdown-arrow"></div>
+                <div id="user-dropdown">
+                    <a class="user-menu-item" href="{{ route('logout') }}">
+                        <img class="user-menu-icon" src="icons/logout.svg" alt="Logout Icon">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
     @else
-        notLoggedIn
+        <a href="{{ route('login') }}" id="login">
+            <img src="images/sign-in-through-steam.png" alt="Login image">
+        </a>
     @endauth
     
 

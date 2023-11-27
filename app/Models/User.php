@@ -49,4 +49,12 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Skin::class);
     }
+
+    
+    public function skinsCount()
+    {
+        return $this->belongsToMany(Skin::class, 'skin_user')->count();
+    }
+
+
 }

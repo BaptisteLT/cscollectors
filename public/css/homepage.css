@@ -2,6 +2,19 @@
 {
     margin-right: auto;
     margin-left: auto;
+    padding-top: 80px;
+}
+
+.cs-container-left
+{
+    padding: 8px;
+}
+
+.container-img
+{
+    width: 100px;
+    -webkit-filter: drop-shadow(0px 3px 8px rgba(0, 0, 0, 0.24));
+    filter: drop-shadow(0px 3px 8px rgba(0, 0, 0, 0.24));
 }
 
 /* Responsive container class for larger screens */
@@ -125,6 +138,7 @@
 
 .cs-container-right
 {
+    position: relative;
     align-items: center;
     flex-grow: 1;
     display: flex;
@@ -132,25 +146,107 @@
     flex-direction: row;
 }
 
+.skin-box-wrapper
+{
+    position: relative;
+}
+
 .skin-box
 {
-    border-radius: 4px;
-    display: inline-block;
-    background: #191D32;
     margin: 5px;
-    position: relative;
+    border-radius: 4px;
 }
 .skin-box.blur
 {
-    filter: grayscale(60%);
+    filter: grayscale(85%);
 }
 .skin-box>img
 {
-    position: absolute;
+    position: relative;
     top: 50%;
     transform: translateY(-50%);
     width: 100%;
 }
-.skin-box > img:hover {
+.skin-box:hover{
+    filter: grayscale(0%);
+}
+.skin-box-wrapper:hover .skin-box > img {
     transform: scale(1.2) translateY(-42%) rotate(6deg);
+}
+
+
+
+  .skin-box-wrapper .tooltip_item_name {
+    visibility: hidden;
+    
+    background: #282F44;
+    border: 1px solid #3C3F53;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+   
+    white-space: nowrap;
+    top: 100%;
+    left: 50%;
+    margin-left: -60px;
+    z-index: 1;
+    padding: 5px;
+    
+    /* Position the tooltip */
+    position: absolute;
+    
+  }
+  
+  .skin-box-wrapper:hover .tooltip_item_name {
+    visibility: visible;
+  }
+
+.cs-container-left-top {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.container_name, .top_percentage {
+    width: 100%;
+}
+.container_name
+{
+    color: #fff;
+}
+.top_percentage
+{
+    color: #afafaf;
+}
+
+.container-img {
+    max-width: 100%;
+}
+
+@media (min-width: 992px) {
+    .cs-container-left
+    {
+        display: flex;
+        align-items: center;
+    }
+    .cs-container-left-top {
+        flex-wrap: wrap;
+    }
+
+    .container_name {
+        order: 2;
+        width: 100%;
+    }
+
+    .container-img {
+        order: 1;
+        margin-bottom: 10px;
+        width: 140px;
+    }
+
+    .top_percentage {
+        order: 3;
+        width: 100%;
+    }
 }
