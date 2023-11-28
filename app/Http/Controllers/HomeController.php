@@ -18,8 +18,9 @@ class HomeController extends Controller
         $this->csContainersService = $csContainersService;
     }
 
-    public function home(): View
+    public function home(Request $request): View
     {
+        
         //TODO: Supprimer les doublons en BDD avec:
         //(SELECT count(*) as count, name FROM skins GROUP BY name ORDER BY `count` DESC)
 
@@ -187,18 +188,66 @@ foreach ($skins as $skin) {
         
         
         //Récupère les conteneurs et tri les skins par ordre ASC de rareté
-        $containers = Container::with(['skins' => function ($query) {
-            $query->select('skins.*', 'rarities.color', 'rarities.background_color')
-                ->join('rarities', 'skins.rarity_id', '=', 'rarities.id')
-                ->orderBy('rarities.rarity', 'asc');
+        $containers = Container::with([
+            'skins' => function ($query) {
+                $query->select('skins.*', 'rarities.color', 'rarities.background_color')
+                    ->join('rarities', 'skins.rarity_id', '=', 'rarities.id')
+                    ->orderBy('rarities.rarity', 'asc');
             },
-        //Compte le nombre d'items que l'utilisateur a dans sa collection
-        ])/*->withCount(['skins' => function ($query) {
-            $query->join('skin_user', 'skins.id', '=', 'skin_user.skin_id')
-                ->where('skin_user.user_id', auth()->id());
-        }])*/->get();
-     
+            'skins.users' => function ($query) {
+                $query->where('user_id', auth()->id());
+            },
+        ])
+        //Récupère le nombre de skins qu'à l'utilisateur dans la collection
+        ->withCount(['skins', 'skins as user_total_skins' => function ($query) {
+            $query->whereHas('users', function ($subquery) {
+                $subquery->where('user_id', auth()->id());
+            });
+        }])
+        //Recherche par nom de container
+        ->when($request->has('container_name'), function ($query) use ($request) {
+            $query->where('name', 'like', '%' . $request->input('container_name') . '%');
+        })
+        //Utilisé pour ne retrouver que les collections où l'utilisateur a au moins 1 skin
+        /*->whereHas('skins', function ($query) {
+            $query->whereHas('users', function ($subquery) {
+                $subquery->where('user_id', auth()->id());
+            });
+        })*/
+        //On tri par le ratio, c'est a dire les collections les plus complétées au moins complétées et inversement
+        ->orderByDesc(DB::raw('user_total_skins / nullif(skins_count, 0)')) //nullif Pour éviter une division par 0
+        ->get();
+
+        //TODO: faire le filtre ratio ASC DESC
+
+        return view('welcome', [
+            'containers' => $containers,
+            'container_name_query' => $request->input('container_name')
         
-        return view('welcome', ['containers' => $containers]); 
+        ]); 
+
+
+
+
+
+
+
+
+        /*
+SELECT
+    containers.id,
+    COUNT(skins.id) AS countTotalSkins,
+    COUNT(CASE WHEN skin_user.user_id = 1 THEN skins.id END) AS countUserTotalSkins,
+    COUNT(CASE WHEN skin_user.user_id = 1 THEN skins.id END) / NULLIF(COUNT(skins.id), 0) AS ratio
+FROM
+    containers
+    LEFT JOIN skins ON containers.id = skins.container_id
+    LEFT JOIN skin_user ON skins.id = skin_user.skin_id AND skin_user.user_id = 1
+WHERE
+    containers.id = 1
+GROUP BY
+    containers.id;
+
+        */
     }
 }

@@ -17,6 +17,7 @@ use App\Http\Controllers\Auth\SteamAuthController;
 */
 
 Route::get('/', [HomeController::class, 'home'])->name('homepage');
+Route::post('/', [HomeController::class, 'home'])->name('homepage');
 
 //Controlleur invokable
 Route::get('/login', SteamAuthController::class)->name('login');

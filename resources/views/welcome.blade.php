@@ -23,7 +23,7 @@
                         <div class="cs-container-left-top">
                             <span class="container_name">{{ $container->name }}</span>
                             <img class="container-img" src="images/containers/{{ $container->image }}" alt="container image"/>
-                            <span class="top_percentage" title="Based on the data of website users">Rank: {{ $container->rankPercentageAndSkinsCount['rankPercentage'] }}% <span>({{ $container->rankPercentageAndSkinsCount['userSkinsCount'] }}/15 completed)</span></span>
+                            <span class="top_percentage" title="Based on the data of website users">Rank: {{ $container->rankPercentage }}% <span>({{ $container->user_total_skins }}/{{ $container->skins_count }})</span></span>
                         </div>
                     </div>
 

@@ -24,12 +24,12 @@ class Container extends Model
      *
      * @return array
      */
-    public function getRankPercentageAndSkinsCountAttribute()
+    public function getRankPercentageAttribute()
     {
         //Compte le nombre d'utilisateurs totaux
         $totalUsersCount = User::count();
         if ($totalUsersCount === 0) {
-            return ['rankPercentage' => 100,'userSkinsCount' => 0];
+            return 100;
         }
 
         $user = auth()->user();
@@ -50,6 +50,6 @@ class Container extends Model
         //Intval pour ne  pas mettre les ,
         $rankPercentage = intval(($higherOrEqualUsersCount/$totalUsersCount)*100);
 
-        return ['rankPercentage' => $rankPercentage, 'userSkinsCount' => $userSkinsCount];
+        return $rankPercentage;
     }
 }
