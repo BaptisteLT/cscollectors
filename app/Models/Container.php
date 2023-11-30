@@ -33,9 +33,10 @@ class Container extends Model
         }
 
         $user = auth()->user();
-        
+
         //Compte le nombre de skins de l'utilisateur connecté dans le container
         $userSkinsCount = $user->skins()->where('container_id', $this->id)->count();
+        
         //Récupère le nombre d'utilisateur qui ont  plus ou égal de skins
         //En gros si le user a 3 skins, et deux autres personnes ont 1 skin chacun, ça retournera 1
         $higherOrEqualUsersCount = User::join('skin_user', 'users.id', '=', 'skin_user.user_id')
@@ -49,6 +50,12 @@ class Container extends Model
 
         //Intval pour ne  pas mettre les ,
         $rankPercentage = intval(($higherOrEqualUsersCount/$totalUsersCount)*100);
+
+        //Si il n'y a personne avec qui comparer on met 100%
+        if($higherOrEqualUsersCount === 0)
+        {
+            $rankPercentage = 100;
+        }
 
         return $rankPercentage;
     }

@@ -3,6 +3,7 @@
     <head>
         @include('layouts/general')
         <link rel="stylesheet" href="css/homepage.css">
+        <script type="text/javascript" src="js/homepage.js"></script>
         <title>CSCollectors</title>
     </head>
 
@@ -13,9 +14,39 @@
     <!-- Récupérer le contenu de la  boite: https://steamcommunity.com/market/listings/730/Fracture%20Case -->
 
     <body>
+
+        TODO inventory loading animation
+        TODO mettre steam trade URL pour que ce soit plus rapide
+
         @include('layouts/header')
 
-        <div class="container">
+        @if(!auth()->check())
+            <div id="overlay">
+                <span>Please sign in through Steam to access your inventory.</span>
+            </div>
+        @endif
+
+        <div class="container {{ !auth()->check() ? 'blurred' : '' }}">
+
+            @if (session('error'))
+                <div class="alert alert-danger">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if (session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if(auth()->check())
+                <a id="refresh-inventory" href="/refresh-inventory">Refresh inventory
+                    @if($cooldown)
+                        in <span id="cooldown">{{ $cooldown }}</span>s
+                    @endif
+                </a>
+            @endif
 
             @foreach ($containers as $container)
                 <div class="cs-container">
@@ -23,7 +54,10 @@
                         <div class="cs-container-left-top">
                             <span class="container_name">{{ $container->name }}</span>
                             <img class="container-img" src="images/containers/{{ $container->image }}" alt="container image"/>
-                            <span class="top_percentage" title="Based on the data of website users">Rank: {{ $container->rankPercentage }}% <span>({{ $container->user_total_skins }}/{{ $container->skins_count }})</span></span>
+                            <span class="top_percentage" title="Based on the data of website users">
+                                @if(auth()->check())
+                                    Rank: {{ $container->rankPercentage }}% <span>({{ $container->user_total_skins }}/{{ $container->skins_count }})</span></span>
+                                @endif
                         </div>
                     </div>
 
@@ -33,7 +67,7 @@
                             <div class="skin-box-wrapper">
                                 <div style="border: 1px solid #{{ $skin->color }}; background: #{{ $skin->user_has_skin ? $skin->background_color : '191D32' }};" 
                                 class="skin-box {{ !$skin->user_has_skin ? 'blur' : '' }}">
-                                    <img src="https://raw.githubusercontent.com/ByMykel/CSGO-API/4fdf048a2b6c21494df4fe915f5fdea5accc6a61/public/images/econ/default_generated/weapon_deagle_cu_deagle_kitch_light.png" alt="skin image"/>
+                                    <img src="{{ $skin->image }}" alt="skin image"/>
                                 </div>
                                 <span class="tooltip_item_name">{{ $skin->name }}</span>
                             </div>

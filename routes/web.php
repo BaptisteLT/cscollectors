@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\LogOutController;
 use App\Http\Controllers\Auth\SteamAuthController;
+use App\Http\Controllers\InventoryRefreshController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,7 +20,9 @@ use App\Http\Controllers\Auth\SteamAuthController;
 Route::get('/', [HomeController::class, 'home'])->name('homepage');
 Route::post('/', [HomeController::class, 'home'])->name('homepage');
 
-//Controlleur invokable
+//Controlleurs invokable
 Route::get('/login', SteamAuthController::class)->name('login');
+Route::get('/refresh-inventory', InventoryRefreshController::class)->name('refresh-inventory');
 //Route de controlleur
 Route::get('/logout', [LogOutController::class, 'logout'])->name('logout');
+

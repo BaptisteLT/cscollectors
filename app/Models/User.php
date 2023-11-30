@@ -25,6 +25,7 @@ class User extends Authenticatable
         'avatar_hash',
         'player_url',
         'loc_country_code',
+        'lastAPIRequest'
     ];
 
     /**
@@ -47,7 +48,7 @@ class User extends Authenticatable
 
     public function skins()
     {
-        return $this->belongsToMany(Skin::class);
+        return $this->belongsToMany(Skin::class)->withTimestamps();
     }
 
     

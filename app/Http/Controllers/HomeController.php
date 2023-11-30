@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use DateTime;
 use App\Models\Skin;
 use App\Models\Container;
 use Illuminate\View\View;
@@ -20,97 +21,14 @@ class HomeController extends Controller
 
     public function home(Request $request): View
     {
-        
-        //TODO: Supprimer les doublons en BDD avec:
-        //(SELECT count(*) as count, name FROM skins GROUP BY name ORDER BY `count` DESC)
-
         //http://cscollectors.com/
-        //TODO: idée de génie, mettre un classement de ceux qui ont le plus d'items par collection
         //TODO:  faire un système de trophées bronze, argent, or
 
         //TODO: filter bronze, silver, gold
+        //TODO: pagination
 
 
-
-
-
-
-
-
-
-/*
-        Pour faire une seule requête
-
-// Assuming $user is the currently logged-in user
-$user = auth()->user();
-
-$skins = Skin::select('*', DB::raw('(CASE WHEN users.id IS NOT NULL THEN 1 ELSE 0 END) AS user_has_skin'))
-    ->leftJoin('users', function ($join) use ($user) {
-        $join->on('users.id', '=', DB::raw($user->id))
-            ->on('skins.id', '=', 'users.skin_id');
-    })
-    ->get();
-
-foreach ($skins as $skin) {
-    // Access the new column
-    $userHasSkin = $skin->user_has_skin;
-
-    // Rest of your logic
-    // Example: echo "Skin: " . $skin->name . ", User has skin: " . $userHasSkin;
-}
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /*SELECT *, count(skins.id) as countSkins FROM containers LEFT JOIN skins ON skins.container_id = containers.id GROUP BY containers.id HAVING countSkins =0;
-
-
-
-
-
-
-
-        INSERT INTO `skins` (`id`, `created_at`, `updated_at`, `name`, `image`, `color`, `container_id`) VALUES (NULL, NULL, NULL, 'P250 | Franklin', NULL, '#D32EE6', 57);
-
-
-        INSERT INTO `skins` (`id`, `created_at`, `updated_at`, `name`, `image`, `color`, `container_id`) VALUES (NULL, NULL, NULL, 'MP5-SD | Lab Rats', NULL, '#8847FF', 58);
-        
-        
-        INSERT INTO `skins` (`id`, `created_at`, `updated_at`, `name`, `image`, `color`, `container_id`) VALUES (NULL, NULL, NULL, 'Desert Eagle | Meteorite', NULL, '#4B69FF', 57);
-        INSERT INTO `skins` (`id`, `created_at`, `updated_at`, `name`, `image`, `color`, `container_id`) VALUES (NULL, NULL, NULL, 'Galil AR | Tuxedo', NULL, '#4B69FF', 57);
-        INSERT INTO `skins` (`id`, `created_at`, `updated_at`, `name`, `image`, `color`, `container_id`) VALUES (NULL, NULL, NULL, 'CZ75-Auto | Tuxedo', NULL, '#4B69FF', 57);
-        
-        
-        INSERT INTO `skins` (`id`, `created_at`, `updated_at`, `name`, `image`, `color`, `container_id`) VALUES (NULL, NULL, NULL, 'MAC-10 | Silver', NULL, '#5E98D9', 57);
-        INSERT INTO `skins` (`id`, `created_at`, `updated_at`, `name`, `image`, `color`, `container_id`) VALUES (NULL, NULL, NULL, 'UMP-45 | Carbon Fiber', NULL, '#5E98D9', 57);
-        INSERT INTO `skins` (`id`, `created_at`, `updated_at`, `name`, `image`, `color`, `container_id`) VALUES (NULL, NULL, NULL, 'Nova | Caged Steel', NULL, '#5E98D9', 57);
-        INSERT INTO `skins` (`id`, `created_at`, `updated_at`, `name`, `image`, `color`, `container_id`) VALUES (NULL, NULL, NULL, 'G3SG1 | Green Apple', NULL, '#5E98D9', 57);
-        INSERT INTO `skins` (`id`, `created_at`, `updated_at`, `name`, `image`, `color`, `container_id`) VALUES (NULL, NULL, NULL, 'Glock-18 | Death Rattle', NULL, '#5E98D9', 57);
-        
-        
-        
-        
-        INSERT INTO `skins` (`id`, `created_at`, `updated_at`, `name`, `image`, `color`, `container_id`) VALUES (NULL, NULL, NULL, 'R8 Revolver | Bone Mask', NULL, '#B0C3D9', 57);
-        INSERT INTO `skins` (`id`, `created_at`, `updated_at`, `name`, `image`, `color`, `container_id`) VALUES (NULL, NULL, NULL, 'Tec-9 | Urban DDPAT', NULL, '#B0C3D9', 57);
-        INSERT INTO `skins` (`id`, `created_at`, `updated_at`, `name`, `image`, `color`, `container_id`) VALUES (NULL, NULL, NULL, Sawed-Off | Forest DDPAT', NULL, '#B0C3D9', 57);
-        INSERT INTO `skins` (`id`, `created_at`, `updated_at`, `name`, `image`, `color`, `container_id`) VALUES (NULL, NULL, NULL, 'MP7 | Forest DDPAT', NULL, '#B0C3D9', 57);
-        INSERT INTO `skins` (`id`, `created_at`, `updated_at`, `name`, `image`, `color`, `container_id`) VALUES (NULL, NULL, NULL, 'SG 553 | Army Sheen', NULL, '#B0C3D9', 57);
-        INSERT INTO `skins` (`id`, `created_at`, `updated_at`, `name`, `image`, `color`, `container_id`) VALUES (NULL, NULL, NULL, 'Negev | Army Sheen', NULL, '#B0C3D9', 57);
-        */
+        //TODO: Bug sur petit écran
 
 
         /*
@@ -120,8 +38,6 @@ foreach ($skins as $skin) {
             $count = 0;
             foreach($containers['data'] as $containerData)
             {
-                //dump('hello');
-
                 $originalName = $containerData['hash_name'];
                 //Pour les conteneurs souvenir, on enlève tout  ce qui n'est pas utile afin d'éviter une duplication de packages souvenir pour toutes les années
                 if(str_contains(strtolower($containerData['hash_name']),'souvenir'))
@@ -183,10 +99,8 @@ foreach ($skins as $skin) {
             echo $e->getMessage();
         }*/
         
-        
-        //Récupère le contenu de la caisse dont on a passé l'url en paramètre correspondant à l'URL sur le steam market                 //TODO: Il va falloir utiliser le hash_name qui est en anglais et rajouter les %20
-        
-        
+        //TODO: do some cahing here and delete it on inventory refresh
+
         //Récupère les conteneurs et tri les skins par ordre ASC de rareté
         $containers = Container::with([
             'skins' => function ($query) {
@@ -220,10 +134,26 @@ foreach ($skins as $skin) {
 
         //TODO: faire le filtre ratio ASC DESC
 
+
+        $user = auth()->user();
+
+        $interval=0;
+        if($user)
+        {
+            /*Calcul du cooldown restant en secondes*/
+            $currentTime = new DateTime();
+            $specifiedTime = new DateTime($user->lastAPIRequest);
+            $interval = $currentTime->diff($specifiedTime);
+            $interval = $interval->s + $interval->i*60;
+            //Cooldown restant en secondes
+            $interval = 300 - $interval;
+        }
+
+        
         return view('welcome', [
             'containers' => $containers,
-            'container_name_query' => $request->input('container_name')
-        
+            'container_name_query' => $request->input('container_name'),
+            'cooldown' => $interval >= 1 ? $interval : null
         ]); 
 
 
